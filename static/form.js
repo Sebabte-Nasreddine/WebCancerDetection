@@ -244,15 +244,16 @@ async function handleFormSubmit(e) {
 
         UI.updateProgressBar(70);
 
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                displayPredictionResult(data);
-                UI.showAlert("Prédiction réalisée avec succès!", 'success');
+            if (response.ok) {
+                const data = await response.json();
+                console.debug('Prediction API response:', data);
+                if (data.success) {
+                    displayPredictionResult(data);
+                    UI.showAlert("Prédiction réalisée avec succès!", 'success');
+                } else {
+                    UI.showAlert("Erreur: " + (data.error || "Erreur inconnue"), 'danger');
+                }
             } else {
-                UI.showAlert("Erreur: " + (data.error || "Erreur inconnue"), 'danger');
-            }
-        } else {
             const text = await response.text();
             console.error('Response:', text);
             UI.showAlert("Erreur serveur. Statut: " + response.status, 'danger');
@@ -295,6 +296,87 @@ function displayPredictionResult(data) {
             <strong>Confiance:</strong> ${probability}%
         </div>
     `;
+
+    // If explanation with SHAP values is present, render an interactive Plotly bar chart
+    try {
+            const expl = data.explanation;
+            const explContainerId = 'explanation-block';
+            // Create or reuse explanation block
+            let explBlock = document.getElementById(explContainerId);
+            if (!explBlock) {
+                explBlock = document.createElement('div');
+                explBlock.id = explContainerId;
+                explBlock.style.marginTop = '12px';
+                explBlock.style.padding = '12px';
+                explBlock.style.background = '#fff7ed';
+                explBlock.style.borderRadius = '8px';
+                explBlock.style.borderLeft = '4px solid #f6ad55';
+                resultContainer.appendChild(explBlock);
+            } else {
+                explBlock.innerHTML = '';
+            }
+
+            if (!expl) {
+                explBlock.innerHTML = '<div style="color:#718096">Aucune explication fournie par le serveur.</div>';
+                return;
+            }
+
+            if (expl.error) {
+                explBlock.innerHTML = `<div style="color:#c53030; font-weight:600;">Erreur génération explication : ${expl.error}</div>`;
+                // show raw JSON to help debugging
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(expl, null, 2);
+                pre.style.marginTop = '8px';
+                pre.style.maxHeight = '180px';
+                pre.style.overflow = 'auto';
+                explBlock.appendChild(pre);
+                return;
+            }
+
+            // Show base value and top features textual summary
+            const baseHtml = `<div style="font-weight:700; margin-bottom:8px;">🧭 Explication (XAI) — Top contributions</div>` +
+                (expl.base_value !== undefined && expl.base_value !== null ? `<div style="color:#4a5568; margin-bottom:8px;">Base value: ${expl.base_value.toFixed ? expl.base_value.toFixed(3) : expl.base_value}</div>` : '');
+            explBlock.innerHTML = baseHtml;
+
+            if (expl.top_features && Array.isArray(expl.top_features)) {
+                const ul = document.createElement('ul');
+                ul.style.margin = '0';
+                ul.style.paddingLeft = '18px';
+                ul.style.color = '#2d3748';
+                expl.top_features.forEach(item => {
+                    const li = document.createElement('li');
+                    const sign = item.shap_value > 0 ? ' (augmente le risque)' : (item.shap_value < 0 ? ' (diminue le risque)' : ' (neutre)');
+                    li.innerHTML = `<strong>${item.feature}</strong>: ${Number(item.shap_value).toFixed(3)}<span style="color:${item.shap_value>0? '#c53030':'#38a169'}">${sign}</span>`;
+                    ul.appendChild(li);
+                });
+                explBlock.appendChild(ul);
+            }
+
+            // Render full SHAP bar chart if available
+            if (expl.all_features && Array.isArray(expl.all_features) && window.Plotly) {
+                const features = expl.all_features.map(item => item.feature);
+                const shap_vals = expl.all_features.map(item => item.shap_value);
+
+                const chartId = 'shap-chart';
+                let chartDiv = document.getElementById(chartId);
+                if (!chartDiv) {
+                    chartDiv = document.createElement('div');
+                    chartDiv.id = chartId;
+                    chartDiv.style.marginTop = '12px';
+                    chartDiv.style.height = '360px';
+                    explBlock.appendChild(chartDiv);
+                } else {
+                    chartDiv.innerHTML = '';
+                }
+
+                const colors = shap_vals.map(v => (v >= 0 ? '#f56565' : '#38a169'));
+                const trace = { x: shap_vals, y: features, orientation: 'h', type: 'bar', marker: { color: colors } };
+                const layout = { margin: { l: 180, r: 40, t: 20, b: 40 }, xaxis: { title: 'SHAP value' }, yaxis: { automargin: true, autorange: 'reversed' } };
+                Plotly.newPlot(chartDiv, [trace], layout, { responsive: true });
+            }
+    } catch (err) {
+        console.error('Erreur rendu SHAP:', err);
+    }
 
     resultContainer.scrollIntoView({ behavior: 'smooth' });
 }

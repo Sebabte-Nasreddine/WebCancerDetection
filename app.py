@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect
 import pandas as pd
 import joblib
+from app_module.utils.xai import explain_model_prediction
 
 app = Flask(__name__)
 
@@ -58,20 +59,34 @@ def index():
 def api_predict():
     """API endpoint pour les prédictions en JSON"""
     try:
-        form = request.form
-        df_input = prepare_input(form)
-        
-        model_choice = form.get('model_choice', 'log_reg')
+        # Accept either form-encoded or JSON payloads
+        data = request.get_json(silent=True)
+        if data:
+            # If JSON, use keys directly
+            model_choice = data.get('model_choice', 'log_reg')
+            df_input = prepare_input(data)
+        else:
+            form = request.form
+            model_choice = form.get('model_choice', 'log_reg')
+            df_input = prepare_input(form)
+
         pipeline = MODELS.get(model_choice, MODELS['log_reg'])
-        
+
         pred = pipeline.predict(df_input)[0]
         prob = pipeline.predict_proba(df_input)[0][1] if hasattr(pipeline, "predict_proba") else 0
-        
+
+        # Compute SHAP explanation (lightweight) and include values
+        try:
+            explanation = explain_model_prediction(pipeline, df_input)
+        except Exception as e:
+            explanation = {'error': f'Failed to compute explanation: {str(e)}'}
+
         return jsonify({
             'success': True,
             'prediction': int(pred),
             'probability': float(prob),
-            'model': model_choice
+            'model': model_choice,
+            'explanation': explanation
         })
     except Exception as e:
         return jsonify({
