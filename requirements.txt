@@ -1,0 +1,25 @@
+# Core dependencies
+Flask==3.1.2
+Flask-CORS==4.0.0
+python-dotenv==1.0.0
+
+# Data processing
+pandas==2.3.3
+numpy==2.3.5
+scikit-learn==1.7.2
+joblib==1.5.2
+
+# Visualization
+plotly==6.5.0
+dash==3.3.0
+dash-bootstrap-components==2.0.4
+
+# QR Code
+qrcode==8.0
+
+# Production
+gunicorn==23.0.0
+
+# Development
+pytest==7.0.0
+pytest-cov==4.0.0

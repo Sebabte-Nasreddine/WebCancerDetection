@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Prédiction Cancer de la Peau</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- En-tête -->
+        <div class="dashboard-header">
+            <h1>📊 Dashboard Analytique</h1>
+            <p>Vue d'ensemble des prédictions et des statistiques</p>
+        </div>
+
+        <!-- Cartes de Statistiques -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <h3>Total Prédictions</h3>
+                <div class="stat-value">0</div>
+                <div class="stat-subtitle">Nombre d'analyses réalisées</div>
+            </div>
+            <div class="stat-card danger">
+                <h3>Cas Positifs</h3>
+                <div class="stat-value">0</div>
+                <div class="stat-subtitle">Risques détectés</div>
+            </div>
+            <div class="stat-card success">
+                <h3>Précision</h3>
+                <div class="stat-value">0%</div>
+                <div class="stat-subtitle">Exactitude du modèle</div>
+            </div>
+        </div>
+
+        <!-- Tableau des Métriques -->
+        <div class="chart-container">
+            <h2>📈 Métriques Détaillées</h2>
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>Métrique</th>
+                        <th>Valeur</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sensibilité (Recall)</td>
+                        <td>--</td>
+                        <td><span class="badge badge-warning">--</span></td>
+                    </tr>
+                    <tr>
+                        <td>Spécificité</td>
+                        <td>--</td>
+                        <td><span class="badge badge-warning">--</span></td>
+                    </tr>
+                    <tr>
+                        <td>Score F1</td>
+                        <td>--</td>
+                        <td><span class="badge badge-warning">--</span></td>
+                    </tr>
+                    <tr>
+                        <td>AUC-ROC</td>
+                        <td>--</td>
+                        <td><span class="badge badge-warning">--</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="chart-container">
+            <h2>📉 Visualisations</h2>
+            <div class="charts-grid">
+                <div id="distribution-chart" class="chart">
+                    <h3>Distribution des Prédictions</h3>
+                </div>
+                <div id="accuracy-chart" class="chart">
+                    <h3>Comparaison des Modèles</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons d'Action -->
+        <div class="action-buttons" style="justify-content: center; margin: 30px 0;">
+            <button class="btn btn-primary" onclick="refreshDashboard()">
+                🔄 Rafraîchir
+            </button>
+            <button class="btn btn-secondary" onclick="exportData('csv')">
+                📥 Exporter CSV
+            </button>
+            <button class="btn btn-secondary" onclick="exportData('json')">
+                📥 Exporter JSON
+            </button>
+            <button class="btn btn-secondary" onclick="printDashboard()">
+                🖨️ Imprimer
+            </button>
+            <a href="/" class="btn btn-primary" style="text-decoration: none;">
+                ⬅️ Nouvelle Prédiction
+            </a>
+        </div>
+
+        <!-- Pied de page -->
+        <div class="footer">
+            <p>🩺 Système de Prédiction du Cancer de la Peau | Mise à jour: <span id="last-update">--</span></p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">
+                © 2025 - Tous droits réservés | Données à titre informatif uniquement
+            </p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script>
+        // Mettre à jour l'heure de la dernière mise à jour
+        document.getElementById('last-update').textContent = new Date().toLocaleString('fr-FR');
+    </script>
+</body>
+</html>

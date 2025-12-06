@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédiction Cancer de la Peau</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>🩺 Prédiction du Cancer de la Peau</h1>
+            <a href="/dashboard/" class="btn-dashboard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.4);">
+                📊 Aller au Dashboard
+            </a>
+        </div>
+        <p style="text-align: center; color: #718096; margin-bottom: 30px;">
+            Analysez vos données de santé et obtenez une prédiction instantanée
+        </p>
+        <form id="cancerForm" method="POST" action="/api/predict">
+            <div class="form-group">
+                <label for="BMI">BMI:</label>
+                <input type="text" id="BMI" name="BMI" required>
+                <small class="error" id="bmiError"></small>
+            </div>
+
+            <div class="form-group">
+                <label for="Sex">Sexe:</label>
+                <select id="Sex" name="Sex">
+                    <option>Male</option>
+                    <option>Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Smoking">Fumeur (Smoking):</label>
+                <select id="Smoking" name="Smoking">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PhysicalActivity">Activité Physique:</label>
+                <select id="PhysicalActivity" name="PhysicalActivity">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="HeartDisease">Heart Disease:</label>
+                <select id="HeartDisease" name="HeartDisease">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="AgeCategory">Age Category:</label>
+                <select id="AgeCategory" name="AgeCategory">
+                    <option>18-24</option><option>25-29</option><option>30-34</option>
+                    <option>35-39</option><option>40-44</option><option>45-49</option>
+                    <option>50-54</option><option>55-59</option><option>60-64</option>
+                    <option>65-69</option><option>70-74</option><option>75-79</option>
+                    <option>80 or older</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="GenHealth">GenHealth:</label>
+                <select id="GenHealth" name="GenHealth">
+                    <option>Excellent</option>
+                    <option>Very good</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Diabetic">Diabetic:</label>
+                <select id="Diabetic" name="Diabetic">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Stroke">Stroke:</label>
+                <select id="Stroke" name="Stroke">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Asthma">Asthma:</label>
+                <select id="Asthma" name="Asthma">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="KidneyDisease">KidneyDisease:</label>
+                <select id="KidneyDisease" name="KidneyDisease">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Race">Race:</label>
+                <select id="Race" name="Race">
+                    <option>White</option>
+                    <option>Black</option>
+                    <option>Asian</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="SleepTime">Sleep Time (hours):</label>
+                <input type="number" id="SleepTime" name="SleepTime" value="7" min="0" max="24">
+            </div>
+
+            <div class="form-group">
+                <label for="PhysicalHealth">PhysicalHealth (0-30):</label>
+                <input type="number" id="PhysicalHealth" name="PhysicalHealth" value="0" min="0" max="30">
+            </div>
+
+            <div class="form-group">
+                <label for="MentalHealth">MentalHealth (0-30):</label>
+                <input type="number" id="MentalHealth" name="MentalHealth" value="0" min="0" max="30">
+            </div>
+
+            <div class="form-group">
+                <label for="DiffWalking">DiffWalking:</label>
+                <select id="DiffWalking" name="DiffWalking">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="model_choice">Modèle :</label>
+                <select id="model_choice" name="model_choice">
+                    <option value="log_reg">Logistic Regression</option>
+                    <option value="random_forest">Random Forest</option>
+                    <option value="gradient_boosting">Gradient Boosting</option>
+                    <option value="knn">KNN</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit">🔍 Analyser mes données</button>
+        </form>
+
+        {% if result %}
+            <div class="result-container">
+                <div class="result-title">📊 Résultat de l'Analyse</div>
+                {% if result.prediction == 1 or result.prediction == 'Yes' %}
+                    <div class="prediction-result prediction-positive">
+                        ⚠️ RISQUE DÉTECTÉ
+                    </div>
+                {% else %}
+                    <div class="prediction-result prediction-negative">
+                        ✓ AUCUN RISQUE IDENTIFIÉ
+                    </div>
+                {% endif %}
+                <div class="prediction-probability">
+                    <strong>Confiance du modèle :</strong> 
+                    <span style="color: var(--primary-color); font-weight: bold;">
+                        {{ "%.2f"|format(result.probability * 100) }}%
+                    </span>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid var(--info-color);">
+                    <strong>ℹ️ Modèle utilisé :</strong> {{ result.model }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='form.js') }}"></script>
+</body>
+</html>
