@@ -33,8 +33,7 @@
                     <i class="fa-solid fa-user-doctor"></i>
                 </div>
                 <div class="brand-text">
-                    <h1>SkinCheck Vision</h1>
-                    <p>Système expert d'aide au diagnostic dermatologique</p>
+                    <h1>SkinCheck</h1>
                 </div>
             </div>
 
@@ -67,7 +66,27 @@
                         </div>
                     </div>
 
-                    <form id="cancerForm" method="POST" action="/api/predict">
+                    <form id="cancerForm" action="/api/predict" method="POST">
+
+                        <!-- Model Selection -->
+                        <div class="form-group"
+                            style="margin-bottom: 2rem; padding: 1rem; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+                            <label class="form-label" for="model_choice"
+                                style="font-weight: 600; color: var(--primary-color);">
+                                <i class="fa-solid fa-brain"></i> Modèle de Classification
+                            </label>
+                            <select id="model_choice" name="model_choice" class="form-control form-select"
+                                style="margin-top: 0.5rem;">
+                                <option value="random_forest" selected>Random Forest (Recommandé)</option>
+                                <option value="gradient_boosting">Gradient Boosting</option>
+                                <option value="log_reg">Régression Logistique</option>
+                                <option value="knn">K-Nearest Neighbors</option>
+                            </select>
+                            <small
+                                style="color: var(--neutral-600); font-size: 0.85rem; margin-top: 0.5rem; display: block;">
+                                Random Forest offre généralement la meilleure précision pour ce type d'analyse.
+                            </small>
+                        </div>
 
                         <!-- Global Grid Container for Horizontal Layout -->
                         <div class="grid-4">
@@ -230,7 +249,7 @@
             </section>
 
             <!-- Result Section - Now Horizontal at Bottom -->
-            <section class="result-section" style="margin-top: 2rem;">
+            <section class="result-section" style="margin-top: 0;">
                 <div id="resultCard" class="result-card"
                     style="width: 100%; max-width: 800px; margin: 0 auto; display: none;">
                     <div class="result-header">

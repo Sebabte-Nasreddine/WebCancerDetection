@@ -191,28 +191,73 @@ def report():
         pred = pipeline.predict(df_input)[0]
         prob = pipeline.predict_proba(df_input)[0][1] if hasattr(pipeline, 'predict_proba') else None
 
-        # explanation
+        # Explanation SHAP
         explanation = explain_model_prediction(pipeline, df_input)
 
-        # build bar chart if possible
-        fig = None
+        # SHAP Chart
+        shap_fig = None
         if explanation and 'all_features' in explanation:
-            feats = [it['feature'] for it in explanation['all_features']]
-            vals = [it['shap_value'] for it in explanation['all_features']]
-            fig = go.Figure(go.Bar(x=vals, y=feats, orientation='h', marker_color=['#FF6B35' if v>=0 else '#10B981' for v in vals]))
-            fig.update_layout(margin=dict(l=200, r=20, t=20, b=20), height=800)
+            feats = [it['feature'] for it in explanation['all_features'][:10]] # Top 10
+            vals = [it['shap_value'] for it in explanation['all_features'][:10]]
+            # Reverse for horizontal bar chart
+            feats.reverse()
+            vals.reverse()
+            colors = ['#ef4444' if v>=0 else '#10b981' for v in vals]
+            
+            shap_fig = go.Figure(go.Bar(x=vals, y=feats, orientation='h', marker_color=colors))
+            shap_fig.update_layout(
+                title="SHAP - Importance Globale",
+                margin=dict(l=150, r=20, t=40, b=20), 
+                height=400,
+                xaxis_title="Impact sur la prédiction"
+            )
+
+        # Explanation LIME
+        lime_explanation = {}
+        lime_fig = None
+        try:
+            lime_explanation = explain_model_prediction_lime(pipeline, df_input)
+            if 'explanation' in lime_explanation:
+                l_data = lime_explanation['explanation'][:10] # Top 10
+                l_feats = [it['feature'] for it in l_data]
+                l_vals = [it['value'] for it in l_data]
+                # Reverse
+                l_feats.reverse()
+                l_vals.reverse()
+                l_colors = ['#ef4444' if v>=0 else '#3b82f6' for v in l_vals] # Blue/Red for LIME
+                
+                lime_fig = go.Figure(go.Bar(x=l_vals, y=l_feats, orientation='h', marker_color=l_colors))
+                lime_fig.update_layout(
+                    title="LIME - Impact Local",
+                    margin=dict(l=150, r=20, t=40, b=20), 
+                    height=400,
+                    xaxis_title="Poids local"
+                )
+        except Exception as e:
+            print(f"Error producing LIME for report: {e}")
 
         meta = {
             'Model': model_choice,
-            'Prediction': str(int(pred)),
+            'Prediction': "Risque" if int(pred) == 1 else "Sain",
             'Probability': f"{prob:.3f}" if prob is not None else 'N/A'
         }
+        
+        # Prepare input data summary (convert df to dict)
+        input_summary = df_input.to_dict(orient='records')[0]
 
-        pdf = generate_professional_pdf('Rapport XAI - Prédiction', explanation, fig, meta)
+        pdf = generate_professional_pdf(
+            title='Rapport d\'Analyse SmartCheck', 
+            shap_explanation=explanation, 
+            lime_explanation=lime_explanation,
+            shap_fig=shap_fig, 
+            lime_fig=lime_fig,
+            meta=meta,
+            input_data=input_summary
+        )
 
         return (pdf, 200, {
             'Content-Type': 'application/pdf',
-            'Content-Disposition': 'attachment; filename="xai_report.pdf"'
+            'Content-Disposition': 'attachment; filename="SkinCheck_Vision_Report.pdf"'
         })
 
     except Exception as e:
