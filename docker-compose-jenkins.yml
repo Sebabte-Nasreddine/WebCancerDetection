@@ -1,6 +1,8 @@
 services:
   jenkins:
-    image: jenkins/jenkins:lts-jdk17
+    build: 
+      context: .
+      dockerfile: deployment/Dockerfile.jenkins
     user: root
     privileged: true
     ports:

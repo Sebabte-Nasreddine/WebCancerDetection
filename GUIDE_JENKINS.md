@@ -8,7 +8,7 @@ We use a separate Docker Compose file to run Jenkins. This Jenkins instance has 
 
 1.  Start the Jenkins container:
     ```bash
-    docker-compose -f docker-compose-jenkins.yml up -d
+    docker-compose -f docker-compose-jenkins.yml up -d --build
     ```
 
 2.  Retrieve the initial admin password:
