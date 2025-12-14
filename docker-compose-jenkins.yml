@@ -1,0 +1,17 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    user: root
+    privileged: true
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/sebabte/canc:/var/jenkins_home/workspace/canc-pipeline
+    container_name: jenkins_server
+    restart: unless-stopped
+
+volumes:
+  jenkins-data:

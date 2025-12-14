@@ -4,15 +4,16 @@ Generates a polished PDF with branding, patient summary, and dual SHAP/LIME anal
 """
 import io
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-import plotly.graph_objects as go
-import plotly.io as pio
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
 
 # --- Constants ---
 PRIMARY_COLOR = colors.HexColor("#2563eb")  # Blue-600
@@ -22,17 +23,66 @@ DANGER_COLOR = colors.HexColor("#ef4444")
 SUCCESS_COLOR = colors.HexColor("#10b981")
 NEUTRAL_LIGHT = colors.HexColor("#f3f4f6")
 
-def _fig_to_png_bytes(fig: go.Figure) -> bytes:
-    """Render Plotly figure to PNG using kaleido via plotly.io.to_image"""
-    # Increase scale for better quality
-    return pio.to_image(fig, format='png', width=1000, height=500, scale=2)
+def _plotly_to_matplotlib(plotly_fig):
+    """Convert Plotly figure to Matplotlib figure"""
+    import plotly.graph_objects as go
+    
+    if not isinstance(plotly_fig, go.Figure):
+        return plotly_fig  # Already matplotlib or other
+    
+    # Extract data from Plotly
+    data = plotly_fig.data[0] if plotly_fig.data else None
+    if not data:
+        return None
+        
+    # Create matplotlib figure
+    fig, ax = plt.subplots(figsize=(10, 5))
+    
+    # Handle bar charts (most common for SHAP/LIME)
+    if hasattr(data, 'x') and hasattr(data, 'y'):
+        if data.orientation == 'h':  # Horizontal bar
+            ax.barh(data.y, data.x, color=data.marker.color if hasattr(data.marker, 'color') else 'steelblue')
+            ax.set_xlabel(plotly_fig.layout.xaxis.title.text if plotly_fig.layout.xaxis.title else '')
+            ax.set_ylabel(plotly_fig.layout.yaxis.title.text if plotly_fig.layout.yaxis.title else '')
+        else:  # Vertical bar
+            ax.bar(data.x, data.y, color=data.marker.color if hasattr(data.marker, 'color') else 'steelblue')
+            ax.set_xlabel(plotly_fig.layout.xaxis.title.text if plotly_fig.layout.xaxis.title else '')
+            ax.set_ylabel(plotly_fig.layout.yaxis.title.text if plotly_fig.layout.yaxis.title else '')
+    
+    # Set title
+    if plotly_fig.layout.title:
+        title_text = plotly_fig.layout.title.text if hasattr(plotly_fig.layout.title, 'text') else str(plotly_fig.layout.title)
+        ax.set_title(title_text)
+    
+    plt.tight_layout()
+    return fig
+
+def _fig_to_png_bytes(fig) -> bytes:
+    """Convert matplotlib or Plotly figure to PNG bytes"""
+    try:
+        # Check if it's a Plotly figure
+        import plotly.graph_objects as go
+        if isinstance(fig, go.Figure):
+            # Convert Plotly to Matplotlib
+            fig = _plotly_to_matplotlib(fig)
+            if fig is None:
+                raise ValueError("Could not convert Plotly figure")
+    except ImportError:
+        pass  # Plotly not installed, assume matplotlib
+    
+    # Now convert matplotlib figure to bytes
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+    buf.seek(0)
+    plt.close(fig)
+    return buf.read()
 
 def generate_professional_pdf(
     title: str, 
     shap_explanation: Dict[str, Any], 
     lime_explanation: Optional[Dict[str, Any]] = None,
-    shap_fig: Optional[go.Figure] = None, 
-    lime_fig: Optional[go.Figure] = None,
+    shap_fig = None, 
+    lime_fig = None,
     meta: Dict[str, str] = None,
     input_data: Dict[str, Any] = None
 ) -> bytes:
@@ -341,7 +391,7 @@ def generate_professional_pdf(
         styles['NormalSmall']
     ))
     story.append(Paragraph(
-        "📌 <link href='https://www.cancer.fr/toute-l-information-sur-les-cancers/se-faire-depister/les-depistages/depistage-des-cancers-de-la-peau/les-cancers-de-la-peau'>https://www.cancer.fr/toute-l-information-sur-les-cancers/se-faire-depister/les-depistages/depistage-des-cancers-de-la-peau/les-cancers-de-la-peau</link>",
+        " <link href='https://www.cancer.fr/toute-l-information-sur-les-cancers/se-faire-depister/les-depistages/depistage-des-cancers-de-la-peau/les-cancers-de-la-peau'>https://www.cancer.fr/toute-l-information-sur-les-cancers/se-faire-depister/les-depistages/depistage-des-cancers-de-la-peau/les-cancers-de-la-peau</link>",
         styles['NormalSmall']
     ))
     story.append(Spacer(1, 5))
