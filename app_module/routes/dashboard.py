@@ -33,8 +33,7 @@ def dashboard_bp(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
     
-    # Personnalisation du style
-    # Personnalisation du style (Template Maître)
+    # Custom Index Template
     dash_app.index_string = '''
     <!DOCTYPE html>
     <html>
@@ -50,9 +49,8 @@ def dashboard_bp(server):
             <!-- Main Style -->
             <link rel="stylesheet" href="/static/style.css">
             <style>
-                /* Overrides specific to Dash/Bootstrap conflicts if any */
                 .card {
-                    margin-bottom: 0 !important; /* Let grid handle spacing */
+                    margin-bottom: 0 !important;
                 }
             </style>
         </head>
@@ -86,7 +84,6 @@ def dashboard_bp(server):
     </html>
     '''
     
-    # Layout
     dash_app.layout = dbc.Container([
         
         # Statistiques clés
@@ -277,7 +274,6 @@ def dashboard_bp(server):
                     return df_in
                 return df_in[df_in[column] == val]
             try:
-                # treat as iterable of choices
                 if 'all' in val:
                     return df_in
             except Exception:
