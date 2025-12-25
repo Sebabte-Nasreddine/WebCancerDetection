@@ -14,3 +14,7 @@ __pycache__/
 *.pt
 *.pth
 *.onnx
+
+# Runtime/Data
+data/tests.db
+data/certificates/
