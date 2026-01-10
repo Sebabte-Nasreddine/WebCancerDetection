@@ -1,14 +1,14 @@
-# 🏥 SkinCheck Pro
+# SkinCheck Pro
 
 Professional AI-powered application for skin cancer risk assessment and prediction.
 
-## ✨ Key Features
+##  Key Features
 - **Multi-Model Prediction**: Utilizes Logistic Regression, Random Forest, Gradient Boosting, and KNN algorithms.
 - **Interactive Dashboard**: Real-time analytics with filtering capabilities using Plotly Dash.
 - **REST API**: Fully documented endpoints for integration.
 - **Report Generation**: PDF reports with SHAP and LIME explainability.
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Option 1: Docker (Recommended)
 Run the application in seconds with Docker Compose:
@@ -34,7 +34,7 @@ cp .env.example .env
 python app.py
 ```
 
-## 🔌 API Summary
+##  API Summary
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/predict` | Get prediction in JSON format |
