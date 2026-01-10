@@ -41,11 +41,11 @@ python app.py
 | `GET` | `/api/health` | System health check |
 | `GET` | `/dashboard/` | Interactive analytics dashboard |
 
-## 🚢 Production Deployment
+##  Production Deployment
 For production, it is recommended to run behind a reverse proxy (Apache/Nginx) with HTTPS.
 - **VPS**: Deploy on a standard Linux VPS (Ubuntu/Debian).
 - **Web Server**: Configure Apache as a reverse proxy to forward traffic to port 5000.
 - **Security**: Always enable HTTPS and restrict access to the dashboard if necessary.
 
-## 📝 License
+##  License
 MIT License.
