@@ -1,4 +1,4 @@
-#بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
 # SkinCheck Pro
 
 Professional AI-powered application for skin cancer risk assessment and prediction.
